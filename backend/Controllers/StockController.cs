@@ -1,5 +1,5 @@
 using backend.Data;
-using backend.models;
+using backend.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -16,7 +16,7 @@ namespace backend.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var stocks = _dbContext.Stocks.ToList();
+            var stocks = _dbContext.Stocks.ToList().Select(stock => stock.ToStockDto());
             return Ok(stocks);
         }
 
@@ -26,7 +26,7 @@ namespace backend.Controllers
             var stock = _dbContext.Stocks.Find(id);
             if (stock == null)
                 return NotFound();
-            return Ok(stock);
+            return Ok(stock.ToStockDto());
         }
     }
 }
