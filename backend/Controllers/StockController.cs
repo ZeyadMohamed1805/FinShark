@@ -1,10 +1,8 @@
 using backend.Data;
 using backend.Dtos.Stock;
 using backend.Mappers;
-using backend.models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
 {
@@ -18,32 +16,33 @@ namespace backend.Controllers
             _dbContext = dbContext;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var stocks = _dbContext.Stocks.ToList().Select(stock => stock.ToStockDto());
+            var stocks = await _dbContext.Stocks.ToListAsync();
+            var stocksDto = stocks.Select(stock => stock.ToStockDto());
             return Ok(stocks);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var stock = _dbContext.Stocks.Find(id);
+            var stock = await _dbContext.Stocks.FindAsync(id);
             if (stock == null)
                 return NotFound();
             return Ok(stock.ToStockDto());
         }
         [HttpPost]
-        public IActionResult Create([FromBody] CreateStockRequestDto stockDto)
+        public async Task<IActionResult> Create([FromBody] CreateStockRequestDto stockDto)
         {
             var stockModel = stockDto.ToStockFromCreateDTO();
-            _dbContext.Stocks.Add(stockModel);
+            await _dbContext.Stocks.AddAsync(stockModel);
             _dbContext.SaveChanges();
             return Ok(stockModel);
         }
         [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
         {
-            var stockModel = _dbContext.Stocks.FirstOrDefault(stock => stock.Id == id);
+            var stockModel = await _dbContext.Stocks.FirstOrDefaultAsync(stock => stock.Id == id);
             if (stockModel == null)
                 return NotFound();
 
